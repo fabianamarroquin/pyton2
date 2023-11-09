@@ -1,7 +1,3 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import Select
-from selenium.webdriver.common.by import By
 import dash
 from dash import dcc
 from dash import html
@@ -16,7 +12,7 @@ Inflacion=pd.read_csv("inflacion.csv")
 PIB=pd.read_csv("PIB.csv")
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-
+server=app.server
 
 app.title="Dashboard"
 
