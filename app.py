@@ -36,6 +36,9 @@ def ret_acumulado(start_date, end_date):
 
     return ret_acumulado_data
 
+retorno_medio=ret.mean()
+retorno_medio
+
 pesos1=np.array([0.0,0.0172,0.4665,0.0,0.2147,0.0,0.0,0.3015,0.0,0.0])
 
 retorno_port=np.sum(retorno_medio*pesos1)
