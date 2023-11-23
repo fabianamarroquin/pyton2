@@ -17,7 +17,6 @@ import math
 warnings.filterwarnings("ignore")
 
 
-
 TasaInteres= pd.read_csv("tasainteres.csv")
 Inflacion=pd.read_csv("inflacion.csv")
 PIB=pd.read_csv("PIB.csv")
