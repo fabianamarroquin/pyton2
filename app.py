@@ -17,77 +17,103 @@ import math
 warnings.filterwarnings("ignore")
 
 
-TasaInteres= pd.read_csv("tasainteres.csv")
-Inflacion=pd.read_csv("inflacion.csv")
-PIB=pd.read_csv("PIB.csv")
+
+stocks = ["PG", "TM", "BIMBOA.MX", "ABEV", "OR.PA", "INTC", "UNP", "PEP", "GIS", "JNJ"]
+end_date = datetime.date.today()
+start_date = end_date - datetime.timedelta(days=365 * 3)
+
+def obtener_datos_accion(symbol, start, end):
+    data = yf.download(symbol, start=start, end=end)
+    return data["Adj Close"]
+
+# Función para calcular rendimiento acumulado
+def calcular_rendimiento_acumulado(datos):
+    return (datos / datos.iloc[0] - 1) * 100
+
+# Función para obtener datos de 'PortafolioSharpeMax' y 'PortafolioVolarilidadMin'
+def ret_acumulado(start_date, end_date):
+
+    return ret_acumulado_data
+
+# Creación de la aplicación Dash
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+server=app.server
 
+app.title= "Dashboard"
 
-app.title="Dashboard"
-
+# Diseño del layout de la aplicación
 app.layout = html.Div([
-    html.H1("Indicadores Económicos"),
-    
+    html.H1("Dashboard de Acciones"),
+
     dcc.Dropdown(
-        id='variablesdd',
-        options=[
-            {'label': 'PIB', 'value': 'PIB'},
-            {'label': 'Tasa de Interés', 'value': 'Tasa de Interés'},
-            {'label': 'Inflación', 'value': 'Inflación'}
-        ],
-        value='PIB',  
-        clearable=False  
+        id='selector-acciones',
+        options=[{'label': accion, 'value': accion} for accion in stocks],
+        multi=True,
+        value=['PG'],  
+        style={'width': '50%'}
     ),
-    
-    # Gráfica 
-    dcc.Graph(id='grafica-indicador'),
-    
-    # Tabla con Dash 
-    dash_table.DataTable(id='tabla_detalles'),
-    
-    html.Button("descargar csv",id="Descargar",n_clicks=0),
-    dcc.Download(id="Descargar csv")
+
+    dcc.Dropdown(
+        id='selector-precio-o-rendimiento',
+        options=[
+            {'label': 'Precio', 'value': 'precio'},
+            {'label': 'Rendimiento Acumulado', 'value': 'rendimiento'},
+            {'label': 'Distribución portafolios', 'value': 'Distribución portafolios'}
+        ],
+        value='precio',
+        style={'width': '50%'}
+    ),
+
+   dcc.RangeSlider(
+    id='selector-fechas',
+    marks={i: start_date + datetime.timedelta(days=i) for i in range(0, 365 * 3, 365)},
+    min=0,
+    max=365 * 3, 
+    step=30,
+    value=[0, 365 * 3]
+),
+
+    dcc.Graph(id='grafico-lineas'),
 ])
 
-
-
+# Callback para actualizar el gráfico
 @app.callback(
-    [Output('grafica-indicador', 'figure'),
-     Output('tabla_detalles', 'data')],
-    [Input('variablesdd', 'value')]
+    Output('grafico-lineas', 'figure'),
+    [Input('selector-acciones', 'value'),
+     Input('selector-precio-o-rendimiento', 'value'),
+     Input('selector-fechas', 'value')]
 )
-def update_data(selected_data):
-    fig = None
-    tabla_detalles = []
+def actualizar_grafico(acciones_seleccionadas, selector, fechas):
+    start_date_range = start_date + datetime.timedelta(days=fechas[0])
+    end_date_range = start_date + datetime.timedelta(days=fechas[1])
 
-    if selected_data == 'PIB':
-        fig = px.line(PIB, x='Año', y='PIB', title='PIB',markers=True)
-        tabla_detalles = PIB.to_dict('records')
-        
-    elif selected_data == 'Tasa de Interés':
-        fig = px.box(TasaInteres, x='Mes', y='TasaInteres', title='Tasa de Interés')
-       
-    elif selected_data == 'Inflación':
-        fig = px.histogram(Inflacion, x='inflacion', title='Inflacion' ,nbins=15,template="simple_white",text_auto=True)
-       
+    if selector == 'Distribución portafolios':
+        # Obtén los datos de 'PortafolioSharpeMax' y 'PortafolioVolarilidadMin'
+        ret_acumulado_data = ret_acumulado(start_date_range, end_date_range)
 
-    return fig, tabla_detalles
+        fig = px.histogram(ret_acumulado_data, x=['PortafolioSharpeMax','PortafolioVolatilidadMin'
+],
+                         labels={'Date': 'Fecha', 'value': 'Valor'},
+                         title=f"Distribución del Portafolio",
+                         )
 
+    else:
+        datos = pd.DataFrame()
+        for accion in acciones_seleccionadas:
+            datos[accion] = obtener_datos_accion(accion, start_date_range, end_date_range)
 
-@app.callback(
-    Output('Descargar csv',"data"),
-    [Input("Descargar","n_clicks")],
-    prevent_initial_call=True
-)
-def descargar_csv(n_clicks):
-    if n_clicks > 0:
-        df = pd.DataFrame(tabla_detalles)
-        csv_string = df.to_csv(index=False, encoding='utf-8-sig')
-        csv_string = "data:text/csv;charset=utf-8-sig," + csv_string
-        csv_string = csv_string.encode('utf-8-sig')
-        return dict(content=csv_string, filename="data.csv")
+        if selector == 'rendimiento':
+            datos = calcular_rendimiento_acumulado(datos)
+
+        fig = px.line(datos, x=datos.index, y=acciones_seleccionadas,
+                      labels={'index': 'Fecha', 'value': selector},
+                      title=f"{', '.join(acciones_seleccionadas)} - {selector}",
+                      )
+
+    return fig
+
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False,host='0.0.0.0', port=10000)        
+    app.run_server(debug=False,host='0.0.0.0', port=10000)
