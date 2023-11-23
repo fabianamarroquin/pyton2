@@ -35,7 +35,10 @@ def calcular_rendimiento_acumulado(datos):
 def ret_acumulado(start_date, end_date):
 
     return ret_acumulado_data
-
+precio=yf.download(stocks,start=start,end=end)["Adj Close"]
+precio
+ret=precio.pct_change()
+ret
 retorno_medio=ret.mean()
 retorno_medio
 
