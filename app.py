@@ -36,6 +36,36 @@ def ret_acumulado(start_date, end_date):
 
     return ret_acumulado_data
 
+pesos1=np.array([0.0,0.0172,0.4665,0.0,0.2147,0.0,0.0,0.3015,0.0,0.0])
+
+retorno_port=np.sum(retorno_medio*pesos1)
+
+retorno_port
+
+
+#retorno acumuladdo por acción a cada una de las fechas 
+ret["PortafolioSharpeMax"]=ret.iloc[:,:10].dot(pesos1)
+
+#calcular los retornos acumulados
+
+ret_acumulado_data=(1+ret).cumprod()
+ret_acumulado_data
+
+#definir pesos de portafolio volatilidad
+
+
+pesos2=np.array([0.0308,0.0969,0.0954,0.0191,0.1204,0.0072,0.0686,0.1108,0.1351,0.3156])
+retorno_port=np.sum(retorno_medio*pesos2)
+retorno_port
+
+#retorno acumuladdo por acción a cada una de las fechas 
+
+ret["PortafolioVolatilidadMin"]=ret.iloc[:,:10].dot(pesos2)
+#calcular los retornos acumulados
+
+ret_acumulado_data=(1+ret).cumprod()
+ret_acumulado_data
+
 # Creación de la aplicación Dash
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
