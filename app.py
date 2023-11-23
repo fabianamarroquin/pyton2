@@ -35,6 +35,17 @@ def calcular_rendimiento_acumulado(datos):
 def ret_acumulado(start_date, end_date):
 
     return ret_acumulado_data
+
+#Acciones
+
+stocks=["PG","TM","BIMBOA.MX","ABEV","OR.PA","INTC","UNP","PEP","GIS","JNJ"]
+
+#dedfinir fechas de obs
+
+end=datetime.datetime.now()
+start=end-datetime.timedelta(days=365*3)
+print(end)
+print(start)
 precio=yf.download(stocks,start=start,end=end)["Adj Close"]
 precio
 ret=precio.pct_change()
