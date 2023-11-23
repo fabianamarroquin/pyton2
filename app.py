@@ -1,18 +1,29 @@
 import dash
-from dash import dcc
-from dash import html
-from dash import dash_table
+from dash import dcc, html
 from dash.dependencies import Input, Output
-import plotly.express as px
+import yfinance as yf
+import datetime
 import pandas as pd
-import dash_bootstrap_components as dbc
+import numpy as np
+import plotly.express as px
+from pypfopt import risk_models, expected_returns
+from pypfopt.efficient_frontier import EfficientFrontier
+from pypfopt import plotting
+import pyfolio as pf
+import warnings 
+import scipy.stats as stats
+import matplotlib.pyplot as plt
+import math 
+warnings.filterwarnings("ignore")
+
+
 
 TasaInteres= pd.read_csv("tasainteres.csv")
 Inflacion=pd.read_csv("inflacion.csv")
 PIB=pd.read_csv("PIB.csv")
 
 app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
-server=app.server
+
 
 app.title="Dashboard"
 
@@ -80,4 +91,4 @@ def descargar_csv(n_clicks):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False,host='0.0.0.0', port=10000)    
+    app.run_server(debug=False,host='0.0.0.0', port=10000)        
